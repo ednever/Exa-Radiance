@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html data-theme="light">
+
+<head>
+    <title>Highlight Text Extension</title>
+    <meta charset="UTF-8">
+    <link id="styleLink" rel="stylesheet" type="text/css" href="../style/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="../script/extensionScripts/header.js"></script>
+    <script src="../script/extensionScripts/styleScript.js"></script>
+    <script src="../script/guide.js"></script>
+</head>
+
+<body>  
+    <h2 style="margin-top: 13%;">How to use Apps Script</h2> 
+    <p class="guideText">1. <strong>Google Sheets</strong> >>> <strong>Extensions</strong> >>> <strong>Apps Script</strong></p>
+    <img src="../images/guide/step1.png" class="guideImage" width="90%" alt="img1">
+    <hr>
+    <p class="guideText">2. Paste the following code:</p>
+    <pre class="code-block">
+<code class="language-javascript">function addValueToStepsStatus(spreadsheetId, note, textContent, columnName) {
+    try {
+        // Open the spreadsheet
+        var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+        var sheets = spreadsheet.getSheets();
+        var targetTextContent = textContent;
+        var found = false;
+        // Iterate through all sheets
+        for (var s = 0; s < sheets.length; s++) {
+            var sheet = sheets[s];
+
+            // Get all data as a 2D array
+            var data = sheet.getDataRange().getValues();
+
+            // Find the index of the column "Lec ID"
+            var stringIdIndex = data[0].indexOf('Lec ID');
+
+            // If the column is found
+            if (stringIdIndex !== -1) {
+                // Search for the cell with an exact match in the specified column
+                for (var i = 1; i < data.length; i++) {
+                    var cellValue = String(data[i][stringIdIndex])
+                        .toLowerCase()
+                        .trim();
+                    if (cellValue === targetTextContent.toLowerCase().trim()) {
+                        // Found the value, get the index of the "Steps" column
+                        var columnIndex = data[0].indexOf(columnName);
+                        if (columnIndex !== -1) {
+                            // i + 1 is the row index, columnIndex + 1 because column index starts from 0
+                            var cell = sheet.getRange(i + 1, columnIndex + 1); 
+                            if (columnName === 'Screenshot') {
+                                var lecData =
+                                    data[i][data[0].indexOf('Lec ID')];
+                                cell.setValue(lecData + '.png');
+                            } else {
+                                cell.setValue(note);
+                            }
+                            found = true;
+                        } else {
+                            Logger.log('Column "Steps" not found.');
+                        }
+                    }
+                }
+            } else {
+                Logger.log('Column "String ID" not found.');
+            }
+        }
+
+        if (!found) {
+            Logger.log('Value not found in any sheet:', targetTextContent);
+        }
+    } catch (error) {
+        Logger.log('Error adding value:', error);
+    }
+}
+
+function getDataBySheetName(spreadsheetId) {
+    try {
+        // Open the table by identifier
+        var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+        var sheet = spreadsheet.getSheetByName('Strings');
+
+        if (!sheet) {
+            Logger.log('Sheet not found');
+            return null;
+        }
+
+        // Get all data as a 2D array
+        var data = sheet.getDataRange().getValues();
+
+        // Form an object with the required data, starting from the second line
+        var result = data
+            .slice(1)
+            .map(function (row) {
+                // Add check for empty rows before adding data
+                if (row[4] !== '') {
+                    return {
+                        'Lec ID': row[2], // Assume that the Lec ID is in the third column
+                        'String ID': row[4], // Assume that String ID is in the fifth column
+                        'Core Strings': row[5], // Assume that Core Strings is in the sixth column
+                        Status: row[8], // Assume that Status is in the ninth column
+                    };
+                }
+                return null; // Skip the blank lines
+            })
+            .filter(Boolean); // Filter and remove null values
+
+        Logger.log('Data retrieved successfully:', result);
+        return result;
+    } catch (error) {
+        Logger.log('Error retrieving data:', error);
+        return null;
+    }
+}
+
+function doGet(req) {
+    try {
+        // Getting the active table
+        var activeSheet =
+            SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+
+        // Get all data as a 2D array
+        var data = activeSheet.getDataRange().getValues();
+
+        // Convert data to JSON
+        var jsonData = [];
+
+        for (var i = 0; i < data.length; i++) {
+            var row = {};
+            for (var j = 0; j < data[i].length; j++) {
+                row['col' + (j + 1)] = data[i][j];
+            }
+            jsonData.push(row);
+        }
+
+        Logger.log('JSON data retrieved successfully:', jsonData);
+
+        // Return JSON
+        return ContentService.createTextOutput(
+            JSON.stringify(jsonData)
+        ).setMimeType(ContentService.MimeType.JSON);
+    } catch (error) {
+        Logger.log('Error in doGet:', error);
+        return ContentService.createTextOutput('Error in doGet.').setStatusCode(
+            500
+        );
+    }
+}
+
+function doPost(e) {
+    try {
+        // Getting data from a query
+        var requestData = JSON.parse(e.postData.contents);
+        console.log('Received request data:', e.postData.contents);
+
+        // Check what action to perform
+        if (requestData.action === 'addNoteToElement') {
+            // Call the function of adding a note
+            addValueToStepsStatus(
+                requestData.sheetId,
+                requestData.note,
+                requestData.textContent,
+                requestData.columnName
+            );
+
+            Logger.log('Note added via doPost:', requestData.note);
+
+            // Returning a successful response
+            return ContentService.createTextOutput(
+                'The note was successfully added to the table.'
+            ).setMimeType(ContentService.MimeType.TEXT);
+        } else if (requestData.action === 'getDataBySheetName') {
+            // Call the function to get data by sheet name
+            var spreadsheetId = requestData.sheetId;
+            var result = getDataBySheetName(spreadsheetId);
+
+            // Return the received data
+            return ContentService.createTextOutput(
+                JSON.stringify(result)
+            ).setMimeType(ContentService.MimeType.JSON);
+        } else {
+            var spreadsheet = SpreadsheetApp.openById(requestData.sheetId);
+            var sheet = spreadsheet.getSheetByName(sheetName);
+
+            // Define from which line to start data insertion
+            var startRow = sheet.getLastRow() + 1;
+
+            // Inserting data into the table
+            for (var i = 0; i < requestData.length; i++) {
+                var rowData = Object.values(requestData[i]);
+                sheet
+                    .getRange(startRow + i, 1, 1, rowData.length)
+                    .setValues([rowData]);
+            }
+        }
+    } catch (error) {
+        console.error('Error in doPost:', error);
+        return ContentService.createTextOutput(
+            'Error in doPost: ' + error.message
+        ).setStatusCode(500);
+    }
+}</code>
+    </pre>
+    <hr>
+    <p class="guideText">3. Click on <strong>Save</strong> >>> <strong>Run</strong> >>> <strong>Review permissions</strong></p>
+    <img src="../images/guide/step2.png" class="guideImage" alt="img2">
+    <img src="../images/guide/step3.png" class="guideImage" width="90%" alt="img3">
+    <hr>
+    <p class="guideText">4. In window <strong>Google hasn't verified this app</strong> click on:
+      	<strong>Advanced</strong> >>> <strong>Go to Untitled project (unsafe)</strong>
+    </p>
+    <img src="../images/guide/step4.png" class="guideImage" width="90%" alt="img4">
+    <img src="../images/guide/step5.png" class="guideImage" width="90%" alt="img5">
+    <hr>
+    <p class="guideText">5. Allow access</p>
+    <hr>
+    <p class="guideText">6. Click on <strong>Deploy</strong> >>> <strong>New deployment</strong></p>
+    <img src="../images/guide/step6.png" class="guideImage" alt="img6">
+    <hr>
+    <p class="guideText">7. Click on <strong>Select type</strong> >>> <strong>Web app</strong></p>
+    <p class="guideText">8. In <strong>Configuration</strong> >>> <strong>Who has access</strong> select <strong>Anyone</strong></p>
+    <img src="../images/guide/step7.png" class="guideImage" width="90%" alt="img7">
+    <hr>
+    <p class="guideText">9. Click on <strong>Deploy</strong></p>
+    <hr>
+    <p class="guideText">10. Allow access again</p>
+    <hr>
+    <p class="guideText">11. Copy the link</p>
+    <img src="../images/guide/step8.png" class="guideImage" width="90%" alt="img8" style="margin-bottom: 5%;">
+</body>
+</html>

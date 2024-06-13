@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html data-theme="light">
+
+<head>
+    <title>Highlight Text Extension</title>
+    <meta charset="UTF-8">
+    <link id="styleLink" rel="stylesheet" type="text/css" href="../style/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="../script/extensionScripts/header.js"></script>
+    <script src="../script/extensionScripts/styleScript.js"></script>
+    <script src="../script/pageScripts/settings.js"></script>
+</head>
+
+<body>
+    <h2>Settings</h2>
+    <hr>
+    <p class="guideText"><strong>Themes</strong></p>
+    <p class="guideText">Change theme:
+        <input class="toggleViewSwitch" type="checkbox" id="darkModeToggle">
+        <label for="darkModeToggle">
+            <i class="fa fa-sun-o fa-2x" aria-hidden="true"></i>
+            <i class="fa fa-moon-o fa-2x" aria-hidden="true"></i>
+        </label>
+    </p>
+    <hr>
+    <p class="guideText"><strong>Submenu</strong></p>
+    <p class="guideText">Submenu is active:
+        <label class="switch">
+            <input id="submenuCheckbox" class="toggleSwitch" type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </p>
+    <hr>
+    <p class="guideText"><strong>Screenshots</strong></p>
+    <p class="guideText">Auto save in downloads:
+        <label class="switch">
+            <input id="saveAsCheckbox" class="toggleSwitch" type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </p>
+    <p class="guideText">Screenshot name:</p>
+    <div class="content" id="content" style="text-align: left; margin-left: 10px;  display: flex;">
+        <label class="word-label" id="wordLabel" style="width: 100px">screenshot</label>
+        <button id="saveNameBtn" class="trash-btn"><i class="fa-2x fa fa-pencil" aria-hidden="true" style="display: inline-block;"></i></button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html data-theme="light">
+
+<head>
+	<title>Highlight Text Extension</title>
+	<meta charset="UTF-8">
+	<link id="styleLink" rel="stylesheet" type="text/css" href="../style/styles.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="../script/extensionScripts/header.js"></script>
+    <script src="../script/extensionScripts/styleScript.js"></script>
+	<script src="../script/pageScripts/popup.js"></script>
+	<script src="../script/extensionScripts/tooltips.js"></script>
+</head>
+
+<body>
+	<div class="content">
+		<input type="text" id="searchText" placeholder="Input text" disabled>
+		<button id="highlightBtn" disabled tooltipText="Search"><i class="fa fa-search"></i></button>
+		<br/>
+		<div class="color-options">
+			<input type="radio" name="highlightColor" value="#FC0365" class="color-option green" checked>
+			<input type="radio" name="highlightColor" value="#2BB5A7" class="color-option cyan">
+			<input type="radio" name="highlightColor" value="#D66513" class="color-option yellow">  
+			<input type="radio" name="highlightColor" value="#0067F4" class="color-option pink">
+			<input type="radio" name="highlightColor" value="#3B1269" class="color-option blueviolet">
+		</div>	
+		<hr>
+		<div class="divsWithText" style="display: flex; justify-content: center; height: 40px;">  	 			
+			<div style="display: flex;">
+				<label style="width: 80px; height: 35px; margin-top: 5px;">New List</label>
+				<button id="newListBtn" tooltipText="New List"><i class="fa fa-plus" aria-hidden="true"></i></button>
+			</div>
+			<div style="height: 35px; margin-top: 3px; margin-left: 20px;">
+				<i class="fa fa-list" aria-hidden="true" style="margin-right: 5px;"></i>
+				<label class="switch">
+					<input id="attributesCheckbox" class="toggleSwitch" type="checkbox">
+					<span id="searchSlider" class="slider" tooltipText="Text/Attribute search"></span>
+				</label>
+				<i class="fa fa-cubes" aria-hidden="true" style="margin-left: -15px;"></i>
+			</div>				
+			<div style="height: 35px; margin-top: 3px; margin-left: 15px;">
+				<button id="syncButton" tooltipText="Syncronise"><i class="fa fa-refresh" aria-hidden="true"></i></button>				
+			</div>	
+		</div>		
+		<div id="wordListsContainer" style="margin-top: 10px;"></div>
+		<br/>		
+	</div>
+	<footer>
+        <p><strong id="version"></strong> &copy; <span id="currentYear"></span> - Alpha CRC. All rights reserved. </p>
+    </footer>
+</body>
+</html>
+
+
+
